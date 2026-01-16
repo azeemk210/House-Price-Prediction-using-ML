@@ -6,3 +6,12 @@ stages:
     - src/preprocess.py
     outs:
     - data/processed/train.csv
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+    - data/processed/train.csv
+    - models/model.pkl
+    - src/evaluate.py
+    metrics:
+    - metrics.json:
+        cache: false
