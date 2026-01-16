@@ -27,24 +27,34 @@ df = pd.read_csv(INPUT_PATH)
 # 3. Basic preprocessing
 # -----------------------------
 
-# Example: remove ID column if present
+# Drop ID column if present
 if "Id" in df.columns:
     df = df.drop(columns=["Id"])
 
-# Handle missing values (VERY BASIC for now)
-# Numerical columns -> fill with median
-num_cols = df.select_dtypes(include=["int64", "float64"]).columns
-df[num_cols] = df[num_cols].fillna(df[num_cols].median())
+# Separate target before encoding
+TARGET = "SalePrice"
+y = df[TARGET]
+X = df.drop(columns=[TARGET])
 
-# Categorical columns -> fill with "Missing"
-cat_cols = df.select_dtypes(include=["object"]).columns
-df[cat_cols] = df[cat_cols].fillna("Missing")
+# Numerical columns
+num_cols = X.select_dtypes(include=["int64", "float64"]).columns
+X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+
+# Categorical columns
+cat_cols = X.select_dtypes(include=["object"]).columns
+X[cat_cols] = X[cat_cols].fillna("Missing")
+
+# One-hot encode categorical variables
+X = pd.get_dummies(X, columns=cat_cols, drop_first=True)
+
+# Reattach target
+df_processed = pd.concat([X, y], axis=1)
 
 # -----------------------------
 # 4. Save processed data
 # -----------------------------
 
 print("Saving processed training data...")
-df.to_csv(OUTPUT_PATH, index=False)
+df_processed.to_csv(OUTPUT_PATH, index=False)
 
 print("Preprocessing completed successfully.")
